@@ -145,6 +145,25 @@ export function hostLabel(url: string): string {
  * haversine at 80 m/min. Beyond a sensible walk it drops the minutes:
  * "≈ 12 km away".
  */
+/**
+ * Where an idea sits on the map: Tripadvisor's position when the lookup
+ * matched, otherwise the address geocoded at save time, otherwise nowhere.
+ */
+export function ideaCoords(idea: {
+  ta_latitude: number | null;
+  ta_longitude: number | null;
+  latitude: number | null;
+  longitude: number | null;
+}): { latitude: number; longitude: number } | null {
+  if (idea.ta_latitude !== null && idea.ta_longitude !== null) {
+    return { latitude: idea.ta_latitude, longitude: idea.ta_longitude };
+  }
+  if (idea.latitude !== null && idea.longitude !== null) {
+    return { latitude: idea.latitude, longitude: idea.longitude };
+  }
+  return null;
+}
+
 export function walkFromHotelLabel(
   fromLat: number,
   fromLon: number,

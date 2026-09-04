@@ -1,4 +1,4 @@
-# Future trips — planning, itineraries and research
+# Future trips: planning, itineraries and research
 
 The signed-in planning layer. Nothing here appears on share pages.
 
@@ -6,29 +6,30 @@ The signed-in planning layer. Nothing here appears on share pages.
 
 There is no separate "future trip" object. A trip is created as normal (an
 `adventures` row) with its future dates; planning data hangs off it. When
-the holiday happens, diary entries and photos land on the *same* trip — so
+the holiday happens, diary entries and photos land on the *same* trip, so
 every past trip keeps its itinerary for ever as the record of how your
 family travelled, where they stayed and what they planned. That is the
-whole integration story with historical trips, and it falls out of the
+whole integration story with historical trips and it falls out of the
 data model for free.
 
 ## Screens
 
-- **`/plans`** — the "Future trips" tab (header link "Plans"). Lists
+- **`/plans`**: the "Future trips" tab (header link "Plans"). Lists
   adventures whose `end_date` is today or later (London civil date, see
   `todayInLondon`), soonest first, with a countdown chip and booking/idea
   counts. Empty state points at + Trip.
-- **`/adventures/[slug]/plan`** — one trip's planning page: itinerary
+- **`/adventures/[slug]/plan`**: one trip's planning page: itinerary
   grouped by day, the **Ideas map**, ideas list, manual idea form,
   research search. Reached from the tab or the "Plans" button on the trip
-  page. The Ideas map pins the hotel and every idea with cached
-  coordinates via the shared `MapPanel`; pin popups link out to Google
-  Maps, and it passes `clickablePois` so Google's own place icons open
-  their info cards — the "what's near us right now" view. It counts as
+  page. The Ideas map pins the hotel and every idea with coordinates
+  via the shared `MapPanel`, with the hotel as its own amber pin with a 🏨
+  glyph (`MapPin.kind = "hotel"`, drawn by both map engines) so it reads
+  at a glance; pin popups link out to Google Maps and it passes `clickablePois` so Google's own place icons open
+  their info cards: the "what's near us right now" view. It counts as
   one Google map load per visit (see the quota cap in
   [`maps-and-journeys.md`](maps-and-journeys.md)).
 - **`/adventures/[slug]/plan/new-item`** and
-  **`.../plan/items/[itemId]/edit`** — booking create/edit, with soft
+  **`.../plan/items/[itemId]/edit`**: booking create/edit, with soft
   delete via the shared `DeleteButton`.
 
 Code: `lib/plan.ts` (pure helpers, tested in `plan.test.mjs`),
@@ -37,21 +38,21 @@ search), components `ItineraryItemForm`, `IdeaForm`, `PlanSearch`.
 
 ## Tables
 
-`itinerary_items` — one booking: kind (train / flight / ferry / hotel /
+`itinerary_items` is one booking: kind (train / flight / ferry / hotel /
 car_hire / restaurant / activity / other), title, provider, booking
 reference, wall-clock start/end, from/to (transport) or location (stays),
-cost + currency, URL, free-text notes. `trip_ideas` — one thing to do:
+cost + currency, URL, free-text notes. `trip_ideas` is one thing to do:
 title, category, description, URL, address, `source`
 (`manual`/`exa`/`parallel`) and a `done` flag so after the trip the list
 doubles as a record of what you actually did.
-`itinerary_documents` — a PDF attached to a booking (see below). All three:
+`itinerary_documents` is a PDF attached to a booking (see below). All three:
 standard RLS (family read/write, admin hard-delete), `set_updated_at`
 trigger, soft delete columns. All of it is in the single schema file under
 `supabase/migrations/`.
 
 ## Documents on bookings (PDFs)
 
-Each booking can carry PDF attachments — the confirmation email, tickets —
+Each booking can carry PDF attachments (the confirmation email, tickets)
 added from the **edit booking** page ("Documents" card, 20 MB cap, PDF
 only) and shown as 📄 links on the plan page's booking cards. Rows live in
 `itinerary_documents`; the bytes live in `family-originals` under
@@ -62,23 +63,23 @@ The upload reuses the photo handshake philosophy in miniature
 (`plan-actions.ts`): `registerPlanDocumentUpload` validates and returns an
 object key, the browser sends the bytes **straight to storage** with the
 plain supabase-js client (a server action would hit Vercel's ~4.5 MB
-request-body cap), and `finalizePlanDocumentUpload` creates the row only
-after checking storage actually has the object — recomputing the key
+request-body cap) and `finalizePlanDocumentUpload` creates the row only
+after checking storage actually has the object, recomputing the key
 server-side rather than trusting the client. Serving is
 `/api/plan-doc/[id]`: auth via `getClaims`, then a 307 redirect to a
-24-hour signed URL, exactly like `/api/media`. Signed-in only — documents
+24-hour signed URL, exactly like `/api/media`. Signed-in only: documents
 are planning data and never appear on share pages.
 
 Removal is the usual soft delete (`deletePlanDocument`). Like other
 planning rows, documents don't appear in the recycle bin; the storage
 object stays until an admin hard-deletes the trip (`bin-actions.ts` removes
-document objects then), and `photos:verify` counts document paths as known
+document objects then) and `photos:verify` counts document paths as known
 so they are never flagged as orphans.
 
 ## The wall-clock time rule
 
 Itinerary times are **the local time printed on the ticket**, stored as if
-UTC and never converted — a 09:15 departure and a 12:40 arrival in another
+UTC and never converted. A 09:15 departure and a 12:40 arrival in another
 timezone are saved and shown exactly as typed, whatever timezone the server
 or reader is in. `lib/plan.ts` therefore slices ISO strings textually
 (`itineraryDayKey`, `itineraryTime`); nothing may pass these values through
@@ -92,15 +93,15 @@ appended on save (`plan-actions.ts`).
 without it the page simply omits it. A Supabase-only installation is
 complete.
 
-`searchPlaces` in `lib/plan-search.ts` runs a model through the gateway —
-`openai/gpt-5.6-luna` by default, overridable with the `PLAN_SEARCH_MODEL`
-env var — with one of the gateway's server-executed search tools,
+`searchPlaces` in `lib/plan-search.ts` runs a model through the gateway
+(`openai/gpt-5.6-luna` by default, overridable with the `PLAN_SEARCH_MODEL`
+env var) with one of the gateway's server-executed search tools,
 `gateway.tools.parallelSearch()` or `gateway.tools.exaSearch()` from the
-`ai` package, and shapes the results into typed suggestions that can be
+`ai` package and shapes the results into typed suggestions that can be
 saved as ideas. Two buttons on the plan page, one per provider.
 
 Two modes: **Find places** returns savable place cards; **Deep dive**
-(`deepDive` action) researches one thing — reviews, prices, deals — and
+(`deepDive` action) researches one thing (reviews, prices, deals) and
 returns a Markdown briefing with inline source links, rendered with
 react-markdown and savable into the ideas list as a note
 (`saveDeepDiveNote`, category `other`).
@@ -113,13 +114,17 @@ tourist-guide page it was found on (`listing_url`, shown muted as "found
 via <site>"). A copy **icon beside the venue name** copies "name, address"
 for pasting anywhere; cards and saved ideas carry **Google Maps**,
 **Google** and **Tripadvisor** links built by the pure helpers in
-`lib/plan.ts` — on a phone at the destination, Maps opens against the
+`lib/plan.ts`; on a phone at the destination, Maps opens against the
 user's live location.
 
 Itinerary items with a `location` are geocoded on save (same
-semantics as entries — see `itineraryCoords` in `plan-actions.ts`), and
-the hotel's coordinates plus each idea's Tripadvisor coordinates produce
-the "🚶 ≈ 700 m · 9 min walk from the hotel" label on idea cards
+semantics as entries; see `itineraryCoords` in `plan-actions.ts`) and
+ideas geocode their `address` on save too (`ideaAddressCoords`, into
+`trip_ideas.latitude/longitude`). An idea's map position is `ideaCoords()`
+in `lib/plan.ts` (tested): Tripadvisor's match when there is one, else
+the geocoded address, else no pin. `npm run geocode:backfill` fills in
+older ideas. The hotel's coordinates plus the idea's produce the "🚶 ≈
+700 m · 9 min walk from the hotel" label on idea cards
 (`walkFromHotelLabel`, haversine at 80 m/min, tested). Long saved
 descriptions (deep-dive reports, > 350 chars) collapse to a three-line
 teaser with a "Read the full report" expander, rendered as Markdown via
@@ -128,11 +133,11 @@ horizontal scroll on phones.
 
 - **Auth/config**: `AI_GATEWAY_API_KEY` in `frontend/.env.local` locally
   and in your host's environment in production. No separate Exa or
-  Parallel keys are needed — the gateway bills centrally and spend shows
+  Parallel keys are needed; the gateway bills centrally and spend shows
   in the Vercel dashboard under AI Gateway.
 - **Cost** (ballpark, at the time of writing): Parallel $5 per 1,000
   searches, Exa $7 per 1,000 (up to 10 results each; extra results $1 per
-  1,000) — though both search tools sat on a gateway **free tier**, so
+  1,000), though both search tools sat on a gateway **free tier**, so
   only model tokens were billed. A whole search shows as **one** gateway
   request, because the search runs inside the model call and never gets
   its own log row.
@@ -142,7 +147,7 @@ horizontal scroll on phones.
   on any page whose server action calls the gateway.
 - The model is asked for a bare JSON array; `plan-search.ts` clips to the
   outermost `[...]`, validates with zod (unknown categories degrade to
-  `other`), and returns friendly errors, never raw ones.
+  `other`) and returns friendly errors, never raw ones.
 - Docs: <https://vercel.com/docs/ai-gateway/models-and-providers/web-search>.
 
 ## Tripadvisor (Terra API)
@@ -154,7 +159,7 @@ only when `TRIPADVISOR_API_KEY` is set (`tripadvisorEnabled()` in
 entry-level Discover plan is enough. Set it in `frontend/.env.local` and
 in your host's environment (Production and Preview if you use both).
 
-- **Billing is per location returned, not per call** — the first 1,000
+- **Billing is per location returned, not per call.** The first 1,000
   entities are free for the account's lifetime, then about $0.015 each at
   the time of writing. So `lib/tripadvisor.ts` always requests `size=1`
   (one entity per lookup) and the result is **cached on the `trip_ideas`
@@ -162,17 +167,17 @@ in your host's environment (Production and Preview if you use both).
   `ta_icon_url`, `ta_url`, `ta_latitude`/`ta_longitude`, `ta_checked_at`).
   Never re-look up a row whose `ta_checked_at` is set.
 - Enrichment runs automatically when an idea is saved (search results and
-  manual adds; deep-dive notes are skipped — their titles are questions,
+  manual adds; deep-dive notes are skipped because their titles are questions,
   not venues). Older rows get a "Get rating" button
   (`fetchTripadvisorRating`).
 - The idea card shows Tripadvisor's own rating-bubbles image
-  (`ta_icon_url`) — that satisfies their attribution rules — and the
+  (`ta_icon_url`), which satisfies their attribution rules. The
   Tripadvisor link goes straight to the venue's page (`ta_url`) instead of
   their search. Tripadvisor sometimes knows the venue's official website;
   it back-fills `url` when the idea had none.
 - Caveat: the lookup trusts Terra's top match anchored to the trip's town.
   It can occasionally hit a duplicate or newer listing with a handful of
-  reviews rather than the main one — the link still lands on a real page,
+  reviews rather than the main one. The link still lands on a real page
   and a wrong match can be refreshed later if it grates.
 
 ## Deliberately not done (yet)

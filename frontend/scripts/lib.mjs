@@ -1,14 +1,24 @@
 // Shared helpers for the maintenance scripts.
 import { createClient } from "@supabase/supabase-js";
+import { readFileSync } from "node:fs";
 import path from "node:path";
+import { parseEnv } from "node:util";
 import { fileURLToPath } from "node:url";
 
+// Reads frontend/.env.local into process.env (existing variables win).
+// Parsed by hand rather than with process.loadEnvFile so a UTF-8 byte-order
+// mark — which PowerShell's Set-Content/Out-File add by default on Windows —
+// can't turn the first variable's name into "U+FEFF NEXT_PUBLIC_SUPABASE_URL"
+// and make every script report it missing.
 export function loadEnv() {
   const envPath = path.join(
     path.dirname(path.dirname(fileURLToPath(import.meta.url))),
     ".env.local",
   );
-  process.loadEnvFile(envPath);
+  const text = readFileSync(envPath, "utf8").replace(/^\uFEFF/, "");
+  for (const [key, value] of Object.entries(parseEnv(text))) {
+    if (!(key in process.env)) process.env[key] = value;
+  }
 }
 
 export function adminClient() {

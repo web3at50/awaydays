@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   APIProvider,
   AdvancedMarker,
   InfoWindow,
   Map,
+  Pin,
   Polyline,
   useAdvancedMarkerRef,
 } from "@vis.gl/react-google-maps";
@@ -63,10 +64,27 @@ function PinMarker({
   const [markerRef, marker] = useAdvancedMarkerRef();
   return (
     <>
+      {/* The hotel stands out from the idea pins: amber, with a hotel glyph.
+          Only the hotel gets a child at all — even a `false` child makes
+          AdvancedMarker render an empty custom container instead of the
+          default pin, which left every idea pin invisible. */}
       <AdvancedMarker
         ref={markerRef}
         position={{ lat: pin.latitude, lng: pin.longitude }}
         onClick={onOpen}
+        {...(pin.kind === "hotel"
+          ? {
+              children: (
+                <Pin
+                  background="#b45309"
+                  borderColor="#7c2d12"
+                  glyphColor="#ffffff"
+                  glyph="🏨"
+                  scale={1.2}
+                />
+              ),
+            }
+          : {})}
       />
       {open && (
         <InfoWindow anchor={marker} onCloseClick={onClose}>
@@ -113,6 +131,19 @@ export default function GoogleAdventureMap({
   onLoadError?: () => void;
 }) {
   const [openPinId, setOpenPinId] = useState<string | null>(null);
+
+  // Google reports key problems (referrer not allowed, billing, invalid
+  // key) through this global callback rather than a script error, so
+  // without it a misconfigured key shows Google's own "Oops" box where the
+  // Leaflet fallback should be
+  useEffect(() => {
+    const w = window as Window & { gm_authFailure?: () => void };
+    w.gm_authFailure = () => onLoadError?.();
+    return () => {
+      delete w.gm_authFailure;
+    };
+  }, [onLoadError]);
+
   if (pins.length === 0) return null;
   const spread = spreadDuplicates(pins);
 

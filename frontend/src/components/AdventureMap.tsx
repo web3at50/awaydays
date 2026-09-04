@@ -113,7 +113,22 @@ export default function AdventureMap({
           );
         })}
       {spread.map((pin) => (
-        <Marker key={pin.id} position={[pin.latitude, pin.longitude]}>
+        <Marker
+          key={pin.id}
+          position={[pin.latitude, pin.longitude]}
+          // The hotel stands out from the idea pins: amber, with a hotel glyph
+          {...(pin.kind === "hotel"
+            ? {
+                icon: L.divIcon({
+                  className: "",
+                  html: `<span style="display:flex;width:32px;height:32px;align-items:center;justify-content:center;border-radius:50% 50% 50% 0;background:#b45309;border:2px solid #7c2d12;box-shadow:0 1px 3px rgba(0,0,0,.4);transform:rotate(-45deg)"><span style="font-size:16px;transform:rotate(45deg)">🏨</span></span>`,
+                  iconSize: [32, 32],
+                  iconAnchor: [16, 32],
+                  popupAnchor: [0, -30],
+                }),
+              }
+            : {})}
+        >
           <Popup>
             <a
               href={pin.href}

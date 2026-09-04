@@ -131,6 +131,15 @@ function itineraryRow(data: z.infer<typeof itinerarySchema>) {
   };
 }
 
+// Ideas geocode their address the same way, so the Ideas map can pin them
+// even when Tripadvisor has no match for the venue
+async function ideaAddressCoords(
+  address: string | null | undefined,
+): Promise<{ latitude: number | null; longitude: number | null }> {
+  if (!address?.trim()) return { latitude: null, longitude: null };
+  return (await geocodeLocation(address)) ?? { latitude: null, longitude: null };
+}
+
 export async function createItineraryItem(
   _prev: FormState,
   formData: FormData,
@@ -413,6 +422,7 @@ export async function createTripIdea(
       description: parsed.data.description ?? null,
       url: parsed.data.url ?? null,
       address: parsed.data.address ?? null,
+      ...(await ideaAddressCoords(parsed.data.address)),
       source: "manual",
       created_by: user.id,
     })
@@ -464,6 +474,7 @@ export async function saveSearchIdea(
       description: parsed.data.description,
       url: parsed.data.url,
       address: parsed.data.address,
+      ...(await ideaAddressCoords(parsed.data.address)),
       source: parsed.data.provider,
       created_by: user.id,
     })

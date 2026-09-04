@@ -11,6 +11,7 @@ import {
   itineraryTime,
   mapsSearchUrl,
   tripAdvisorSearchUrl,
+  ideaCoords,
   walkFromHotelLabel,
 } from "@/lib/plan";
 import { CopyButton } from "@/components/CopyButton";
@@ -94,14 +95,14 @@ export default async function PlanPage({
   const placeName = adventure.location ?? adventure.title;
 
   // The hotel anchors "walk from the hotel" labels on ideas with known
-  // coordinates (Tripadvisor supplies those during enrichment)
+  // coordinates (see ideaCoords: Tripadvisor's match, else the geocoded address)
   const hotel = items.find(
     (item) => item.kind === "hotel" && item.latitude !== null && item.longitude !== null,
   );
 
-  // The ideas map: the hotel plus every idea with cached coordinates
-  // (Tripadvisor supplies those during enrichment). Pin links open Google
-  // Maps at the venue, same as the 📍 Maps link on the cards.
+  // The ideas map: the hotel (its own amber pin) plus every idea with
+  // coordinates. Pin links open Google Maps at the venue, same as the
+  // 📍 Maps link on the cards.
   const planPins: MapPin[] = [
     ...(hotel
       ? [
@@ -112,20 +113,36 @@ export default async function PlanPage({
             title: hotel.title,
             subtitle: "Where we're staying",
             href: mapsSearchUrl(hotel.title, hotel.location, placeName),
+            kind: "hotel" as const,
           },
         ]
       : []),
-    ...sortedIdeas
-      .filter((idea) => idea.ta_latitude !== null && idea.ta_longitude !== null)
-      .map((idea) => ({
-        id: idea.id,
-        latitude: idea.ta_latitude as number,
-        longitude: idea.ta_longitude as number,
-        title: idea.title,
-        subtitle: `${IDEA_CATEGORY_LABELS[idea.category]}${idea.done ? " · done ✓" : ""}`,
-        href: mapsSearchUrl(idea.title, idea.address, placeName),
-      })),
+    ...sortedIdeas.flatMap((idea) => {
+      const coords = ideaCoords(idea);
+      if (!coords) return [];
+      return [
+        {
+          id: idea.id,
+          ...coords,
+          title: idea.title,
+          subtitle: `${IDEA_CATEGORY_LABELS[idea.category]}${idea.done ? " · done ✓" : ""}`,
+          href: mapsSearchUrl(idea.title, idea.address, placeName),
+        },
+      ];
+    }),
   ];
+
+  // "≈ 650 m · 8 min walk" from the hotel, when both ends are known
+  const walkFromHotel = (idea: TripIdea): string | null => {
+    const coords = ideaCoords(idea);
+    if (!hotel || !coords) return null;
+    return walkFromHotelLabel(
+      hotel.latitude as number,
+      hotel.longitude as number,
+      coords.latitude,
+      coords.longitude,
+    );
+  };
 
   return (
     <div>
@@ -364,20 +381,11 @@ export default async function PlanPage({
                       {idea.address}
                     </p>
                   )}
-                  {hotel &&
-                    idea.ta_latitude !== null &&
-                    idea.ta_longitude !== null && (
-                      <p className="mt-1 text-xs text-stone-500">
-                        🚶{" "}
-                        {walkFromHotelLabel(
-                          hotel.latitude as number,
-                          hotel.longitude as number,
-                          idea.ta_latitude,
-                          idea.ta_longitude,
-                        )}{" "}
-                        from the hotel
-                      </p>
-                    )}
+                  {walkFromHotel(idea) && (
+                    <p className="mt-1 text-xs text-stone-500">
+                      🚶 {walkFromHotel(idea)} from the hotel
+                    </p>
+                  )}
                   {idea.ta_rating !== null && (
                     <p className="mt-1.5 flex items-center gap-1.5 text-sm text-stone-600">
                       {idea.ta_icon_url && (

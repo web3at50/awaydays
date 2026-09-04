@@ -1,7 +1,7 @@
 # Porting Awaydays to a different stack
 
-Awaydays is deliberately built on one stack — Supabase for auth, database
-and storage, Next.js for everything else — and the main repository will
+Awaydays is deliberately built on one stack (Supabase for auth, database
+and storage, Next.js for everything else) and the main repository will
 stay that way. Nobody is stopped from taking it somewhere else, though:
 that's what the MIT licence is for. This page is the map for anyone (or
 anyone's coding agent) doing that in a fork.
@@ -27,7 +27,7 @@ Everything below would need replacing or reworking.
 | Area | Where | What it relies on |
 |---|---|---|
 | Auth | `src/proxy.ts`, `src/app/api/media/[id]/route.ts`, every server action in `src/lib/*-actions.ts` and `src/lib/actions.ts` | `@supabase/ssr` cookie sessions; `auth.getClaims()` verified locally against the project's JWKS; `auth.getUser()` in mutations |
-| Clients | `src/lib/supabase/{server,client,admin}.ts` | Three clients: server (cookie session), browser, and the service-role admin client used for share pages and scripts |
+| Clients | `src/lib/supabase/{server,client,admin}.ts` | Three clients: server (cookie session), browser and the service-role admin client used for share pages and scripts |
 | Data access | every page and action that calls `.from(...)` | PostgREST query builder, including embedded joins such as `adventures!media_adventure_id_fkey!inner(...)` |
 | Authorisation | `supabase/migrations/` | Row-level security policies and the `is_family_member()` / `current_user_role()` helper functions. Without RLS the service-role and user clients are equivalent, so a port must rebuild authorisation in the application layer |
 | Storage | `src/lib/actions.ts` (upload handshake), `src/app/api/media/[id]/`, `src/app/share/[token]/photo/[mediaId]/`, `src/app/api/plan-doc/[id]/`, `scripts/*.mjs` | Private buckets `family-originals` and `family-derived`; signed URLs with 307 redirects; object keys `adventures/<adventureId>/entries/<entryId>/<mediaId>/original.<ext>` |
@@ -41,14 +41,14 @@ authorisation, the session handling and the storage layer.
 ## What is already swappable
 
 Each of these wraps one external service in one function that returns
-"result, or null". Swap the function body; nothing else notices.
+"result or null". Swap the function body; nothing else notices.
 
 | Service | File | Contract |
 |---|---|---|
-| Geocoding (Nominatim) | `src/lib/geocode.ts` — `geocodeLocation()` | text → `{ latitude, longitude }` or null |
-| Road routing (OSRM) | `src/lib/route.ts` — `fetchDrivingRoute()` | two points → `{ points, km }` or null |
-| Research search (Vercel AI Gateway) | `src/lib/plan-search.ts` — `searchPlaces()`, `deepDive()` | query → typed suggestions / Markdown, or a friendly error |
-| Venue ratings (Tripadvisor Terra) | `src/lib/tripadvisor.ts` — `lookupTripadvisor()` | name + town → match or null |
+| Geocoding (Nominatim) | `src/lib/geocode.ts`, `geocodeLocation()` | text → `{ latitude, longitude }` or null |
+| Road routing (OSRM) | `src/lib/route.ts`, `fetchDrivingRoute()` | two points → `{ points, km }` or null |
+| Research search (Vercel AI Gateway) | `src/lib/plan-search.ts`, `searchPlaces()`, `deepDive()` | query → typed suggestions / Markdown or a friendly error |
+| Venue ratings (Tripadvisor Terra) | `src/lib/tripadvisor.ts`, `lookupTripadvisor()` | name + town → match or null |
 | Map rendering | `src/components/MapPanel.tsx`, `JourneyMapPanel.tsx` | Google Maps when configured, Leaflet otherwise; geometry shared in `src/lib/map-geometry.ts` |
 | Map tiles for Leaflet | `src/lib/map-tiles.ts` | Esri with a key, OpenStreetMap without |
 
@@ -75,6 +75,6 @@ Or wrap that in a container. Environment variables are the same as
 ## A note on scope
 
 Ports live in forks. Pull requests that add a second backend or an
-abstraction layer to the main repository will be declined — not because
+abstraction layer to the main repository will be declined, not because
 the work is bad, but because keeping one stack simple is the whole point
 here. See `CONTRIBUTING.md`.

@@ -116,6 +116,8 @@ export interface MapPin {
   thumbUrl?: string;
   /** How the family travelled TO this pin — decorates the leg that ends here */
   travelMode?: TravelMode | null;
+  /** Drawn differently: the hotel gets an amber pin with a hotel glyph */
+  kind?: "hotel";
 }
 
 export const REACTION_EMOJI = ["❤️", "😂", "🤩", "👏", "😮"] as const;
@@ -271,6 +273,9 @@ export interface TripIdea {
   ta_latitude: number | null;
   ta_longitude: number | null;
   ta_checked_at: string | null;
+  /** Geocoded from the address at save time; the map falls back to these when Tripadvisor had no match */
+  latitude: number | null;
+  longitude: number | null;
   created_by: string;
   created_at: string;
   updated_at: string;

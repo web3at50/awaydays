@@ -1,8 +1,8 @@
-# Awaydays — start here (for coding agents and humans)
+# Awaydays: start here (for coding agents and humans)
 
 A private, mobile-first family diary for holidays, day trips and events:
 phone photo uploads, journey maps, revocable read-only sharing with
-relatives, and a planning layer for trips that haven't happened yet. The
+relatives and a planning layer for trips that haven't happened yet. The
 app calls itself "Holidays" in its own UI.
 
 **This file is a router.** Read it, then [`docs/overview.md`](docs/overview.md),
@@ -19,7 +19,7 @@ into any file other than `frontend/.env.local`.
 
 | If the task is about… | Read |
 |---|---|
-| **Orientation** — what the app is, what exists today | [`docs/overview.md`](docs/overview.md) |
+| **Orientation**: what the app is, what exists today | [`docs/overview.md`](docs/overview.md) |
 | **Code layout, commands, framework traps** (Next 16, Uppy, Leaflet, Turbopack, tests) | [`docs/architecture.md`](docs/architecture.md) |
 | **Database, RLS, storage, migrations** (schema, buckets, soft delete, PostgREST join trap) | [`docs/backend-supabase.md`](docs/backend-supabase.md) |
 | **Photos or video** (upload handshake, derivatives, processing scripts, importing a folder) | [`docs/photos-and-video.md`](docs/photos-and-video.md) |
@@ -34,7 +34,7 @@ into any file other than `frontend/.env.local`.
 
 - **The data is precious.** This app holds a family's irreplaceable
   photos and diary. Test destructive flows only on scratch data you
-  create, and clean it up afterwards — database rows *and* storage
+  create and clean it up afterwards: database rows *and* storage
   objects. Originals in storage are never modified.
 - **Never edit an applied migration.** Add a new timestamped file in
   `supabase/migrations/` and apply it to the database, so disk and
@@ -51,7 +51,7 @@ Detail in [`docs/architecture.md`](docs/architecture.md).
   `frontend/node_modules/next/dist/docs/` when unsure. The middleware
   file is `proxy.ts`; `params`, `searchParams` and `cookies()` are async.
 - **Uppy v5** has no React `<Dashboard>`; mount the plugin in `useEffect`.
-- **Leaflet and Google Maps are client-only** — always through the
+- **Leaflet and Google Maps are client-only**, always through the
   dynamic `ssr:false` wrappers (`MapPanel`, `JourneyMapPanel`).
 - **Turbopack** occasionally corrupts state after installing packages;
   delete `frontend/.next` and restart.

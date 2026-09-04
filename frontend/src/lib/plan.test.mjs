@@ -7,6 +7,7 @@ import {
   formatItineraryDay,
   groupItineraryByDay,
   hostLabel,
+  ideaCoords,
   itineraryDayKey,
   itineraryTime,
   mapsSearchUrl,
@@ -95,4 +96,15 @@ test("document sizes read naturally at every scale", () => {
   assert.equal(documentSizeLabel(3.4 * 1024 * 1024), "3.4 MB");
   assert.equal(documentSizeLabel(2 * 1024 * 1024), "2 MB");
   assert.equal(documentSizeLabel(15 * 1024 * 1024), "15 MB");
+});
+
+test("ideaCoords prefers Tripadvisor's position, then the geocoded address", () => {
+  const both = { ta_latitude: 51.2, ta_longitude: 3.2, latitude: 51.3, longitude: 3.3 };
+  assert.deepEqual(ideaCoords(both), { latitude: 51.2, longitude: 3.2 });
+  const geocodedOnly = { ta_latitude: null, ta_longitude: null, latitude: 51.3, longitude: 3.3 };
+  assert.deepEqual(ideaCoords(geocodedOnly), { latitude: 51.3, longitude: 3.3 });
+  const none = { ta_latitude: null, ta_longitude: null, latitude: null, longitude: null };
+  assert.equal(ideaCoords(none), null);
+  const halfTa = { ta_latitude: 51.2, ta_longitude: null, latitude: 51.3, longitude: 3.3 };
+  assert.deepEqual(ideaCoords(halfTa), { latitude: 51.3, longitude: 3.3 });
 });

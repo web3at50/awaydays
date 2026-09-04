@@ -1,5 +1,5 @@
-// One-off backfill: geocode adventures/entries that have a Location but no
-// coordinates yet. Safe to rerun — it only touches rows missing coords.
+// One-off backfill: geocode adventures/entries with a Location, and trip
+// ideas with an address, that have no coordinates yet. Safe to rerun — it only touches rows missing coords.
 // Respects Nominatim's 1 request/second policy.
 //
 // Usage: node scripts/backfill-geocode.mjs
@@ -25,11 +25,11 @@ async function geocode(query) {
   return { latitude, longitude };
 }
 
-async function backfill(table) {
+async function backfill(table, column = "location") {
   const { data: rows, error } = await supabase
     .from(table)
-    .select("id, location")
-    .not("location", "is", null)
+    .select(`id, ${column}`)
+    .not(column, "is", null)
     .is("latitude", null)
     .is("deleted_at", null);
   if (error) {
@@ -38,8 +38,8 @@ async function backfill(table) {
   }
 
   for (const row of rows) {
-    if (!row.location.trim()) continue;
-    const coords = await geocode(row.location);
+    if (!row[column].trim()) continue;
+    const coords = await geocode(row[column]);
     if (coords) {
       const { error: updateError } = await supabase
         .from(table)
@@ -49,11 +49,11 @@ async function backfill(table) {
         console.error(`${table} ${row.id}: update failed: ${updateError.message}`);
       } else {
         console.log(
-          `${table} ${row.id}: "${row.location}" → ${coords.latitude}, ${coords.longitude}`,
+          `${table} ${row.id}: "${row[column]}" → ${coords.latitude}, ${coords.longitude}`,
         );
       }
     } else {
-      console.log(`${table} ${row.id}: "${row.location}" → no result, left blank`);
+      console.log(`${table} ${row.id}: "${row[column]}" → no result, left blank`);
     }
     await sleep(1100);
   }
@@ -62,3 +62,4 @@ async function backfill(table) {
 
 await backfill("adventures");
 await backfill("entries");
+await backfill("trip_ideas", "address");
