@@ -9,10 +9,9 @@ It started as one family's app and still is. It's just open now, so
 yours can have one too.
 
 <p align="center">
-  <img src="docs/screenshots/trips.webp" width="195" alt="The trip list on a phone: one trip card with its cover, dates and summary" />
-  <img src="docs/screenshots/trip.webp" width="195" alt="A trip page: cover photo, dates and the whole journey drawn on Google Maps" />
+  <img src="docs/screenshots/holiday.webp" width="195" alt="A trip page on a phone: cover photo, dates, summary and the journey from home drawn on Google Maps with train legs" />
+  <img src="docs/screenshots/trip.webp" width="195" alt="Another trip page: cover photo, dates and the whole journey drawn on Google Maps" />
   <img src="docs/screenshots/entry.webp" width="195" alt="A diary entry: the travel leg from the last stop with its road route on Google Maps, the day's text and the photo gallery" />
-  <img src="docs/screenshots/map.webp" width="195" alt="The map of everywhere the family has been, one pin per entry" />
 </p>
 
 <p align="center">
@@ -22,7 +21,11 @@ yours can have one too.
   <img src="docs/screenshots/plan-ideas-map.webp" width="195" alt="The Ideas map on Google Maps: the hotel and every saved idea pinned around Bruges" />
 </p>
 
-<p align="center"><sub>Top row: the trip list and the everywhere map as a relative sees them through a share link (a fictional Lake District weekend, on Leaflet maps), then a trip page and one of its entries on Google Maps. Bottom row: planning a Christmas trip to Bruges; the bookings, hotel and PDF are invented. Google Maps, the ratings and the research search need the optional keys. Without them the maps fall back to Leaflet and the research box and ratings simply don't appear.</sub></p>
+<p align="center">
+  <img src="docs/screenshots/everywhere.webp" width="600" alt="The map of everywhere the family has been: one pin per diary entry across Europe on Google Maps" />
+</p>
+
+<p align="center"><sub>Top row: two trip pages and one entry, as the family sees them signed in. Middle row: planning a Christmas trip to Bruges; the bookings, hotel and PDF are invented. Bottom: the map of everywhere, one pin per entry. Google Maps, the ratings and the research search need the optional keys. Without them the maps fall back to Leaflet and the research box and ratings simply don't appear.</sub></p>
 
 ## What it does
 
