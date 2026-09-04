@@ -1,0 +1,59 @@
+{
+  "name": "frontend",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test src/lib/*.test.mjs",
+    "start": "next start",
+    "lint": "eslint",
+    "icons": "node scripts/generate-icons.mjs",
+    "photos:process": "node scripts/process-photos.mjs",
+    "videos:process": "node scripts/process-videos.mjs",
+    "photos:verify": "node scripts/verify-photos.mjs",
+    "backup:storage": "node scripts/backup-storage.mjs",
+    "geocode:backfill": "node scripts/backfill-geocode.mjs",
+    "routes:backfill": "node scripts/backfill-routes.mjs"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.7.1",
+    "@supabase/ssr": "^0.12.4",
+    "@supabase/supabase-js": "^2.111.0",
+    "@uppy/core": "^5.2.0",
+    "@uppy/dashboard": "^5.1.1",
+    "@uppy/react": "^5.2.0",
+    "@uppy/tus": "^5.1.1",
+    "@vis.gl/react-google-maps": "^1.9.0",
+    "ai": "^7.0.84",
+    "date-fns": "^4.4.0",
+    "leaflet": "^1.9.4",
+    "next": "16.2.12",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "react-hook-form": "^7.84.0",
+    "react-leaflet": "^5.0.0",
+    "react-markdown": "^10.1.0",
+    "remark-breaks": "^4.0.0",
+    "remark-gfm": "^4.0.1",
+    "server-only": "^0.0.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/typography": "^0.5.20",
+    "@types/leaflet": "^1.9.22",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.12",
+    "exifr": "^7.1.3",
+    "sharp": "^0.35.3",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

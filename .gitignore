@@ -1,0 +1,23 @@
+# Secrets — .env.example is the only env file that belongs in git
+.env
+.env.*
+!.env.example
+
+# Dependencies and build output
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# Local data that must never be published
+backups/
+photos/
+*.log
+
+# OS and editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.claude/
